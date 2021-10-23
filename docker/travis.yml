@@ -1,0 +1,58 @@
+version: "3"
+
+services:
+  frontend:
+    build: frontend
+    volumes:
+      # Mount source-code for development
+      - ./:/app
+
+  backend:
+    build: backend
+    volumes:
+      # Mount source-code for development
+      - ./:/app
+
+  console:
+    build: console
+    volumes:
+      # Re-use local composer cache via host-volume
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      # Mount source-code for development
+      - ./:/app
+
+  storage:
+    build: storage
+    volumes:
+      # Mount source-code for development
+      - ./:/app
+
+  api:
+    build: api
+    volumes:
+      # Mount source-code for development
+      - ./:/app
+
+  nginx:
+    image: nginx:1.12-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./:/app
+      - ./docker/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+    depends_on:
+      - api
+      - frontend
+      - backend
+      - console
+      - storage
+
+  db:
+    image: mysql:8
+    volumes:
+      - ./mysql/config.cnf:/etc/mysql/conf.d/config.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: yii2-starter-kit
+      MYSQL_USER: ysk_dbu
+      MYSQL_PASSWORD: ysk_pass
